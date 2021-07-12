@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/connect"
@@ -49,7 +50,7 @@ func resourceInstanceCreate(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("instance_id", aws.StringValue(resp.Id))
 	d.Set("arn", aws.StringValue(resp.Arn))
 
-	// resourceInstanceRead(ctx, d, m)
+	time.Sleep(3 * time.Minute) // wait 3m for connect instance creation
 
 	return diags
 }

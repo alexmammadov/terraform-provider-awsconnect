@@ -35,10 +35,10 @@ resource "awsconnect_instance_lex_bot" "second" {
   lex_bot_name   = "LexBotForConnect"
 }
 
-resource "awsconnect_instance_contact_flow" "second" {
-  instance_id = awsconnect_instance.second.instance_id
-  name        = "LexBotConnect"
-  type        = "CONTACT_FLOW"
-  description = "Contact flow description"
-  content     = file("contact_flow.json")
-}
+# resource "awsconnect_instance_contact_flow" "second" {
+#   instance_id = awsconnect_instance.second.instance_id
+#   name        = "LexBotConnect"
+#   type        = "CONTACT_FLOW"
+#   description = "Contact flow description"
+#   content     = file("contact_flow.json")
+# }
