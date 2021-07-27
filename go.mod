@@ -1,4 +1,4 @@
-module github.com/amirashad/terraform-provider-awsconnect
+module github.com/alexmammadov/terraform-provider-awsconnect
 
 go 1.16
 
