@@ -17,10 +17,11 @@ func resourceInstanceLexBot() *schema.Resource {
 		DeleteContext: resourceInstanceLexBotDelete,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id":    {Type: schema.TypeString, Required: true, ForceNew: true},
-			"lex_bot_region": {Type: schema.TypeString, Required: true, ForceNew: true},
-			"lex_bot_name":   {Type: schema.TypeString, Required: true, ForceNew: true},
-			"arn":            {Type: schema.TypeString, Computed: true, Optional: true},
+			"instance_id":       {Type: schema.TypeString, Required: true, ForceNew: true},
+			"lex_bot_region":    {Type: schema.TypeString, Required: true, ForceNew: true},
+			"lex_bot_name":      {Type: schema.TypeString, Required: true, ForceNew: true},
+			"lex_bot_alias_arn": {Type: schema.TypeString, Required: true, ForceNew: true},
+			"arn":               {Type: schema.TypeString, Computed: true, Optional: true},
 		},
 	}
 }
@@ -30,24 +31,23 @@ func resourceInstanceLexBotCreate(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 	connectSvc := meta.(Client).ConnectClient
 
-	params := &connect.AssociateLexBotInput{
+	params := &connect.AssociateBotInput{
 		InstanceId: aws.String(d.Get("instance_id").(string)),
 		LexBot: &connect.LexBot{
 			LexRegion: aws.String(d.Get("lex_bot_region").(string)),
 			Name:      aws.String(d.Get("lex_bot_name").(string)),
 		},
+		LexV2Bot: &connect.LexV2Bot{
+			AliasArn: aws.String(d.Get("lex_bot_alias_arn").(string)),
+		},
 	}
 
-	_, err := connectSvc.AssociateLexBot(params)
+	_, err := connectSvc.AssociateBot(params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(d.Get("instance_id").(string))
-	// d.Set("instance_id", aws.StringValue())
-	// d.Set("arn", aws.StringValue(resp.Arn))
-
-	// // resourceInstanceLexBotRead(ctx, d, m)
 
 	return diags
 }
@@ -59,11 +59,11 @@ func resourceInstanceLexBotRead(ctx context.Context, d *schema.ResourceData, met
 
 	instanceID := d.Get("instance_id").(string)
 
-	params := &connect.ListLexBotsInput{
+	params := &connect.ListBotsInput{
 		InstanceId: aws.String(instanceID),
 	}
 
-	resp, err := connectSvc.ListLexBots(params)
+	resp, err := connectSvc.ListBots(params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,8 +79,9 @@ func resourceInstanceLexBotRead(ctx context.Context, d *schema.ResourceData, met
 	// // resourceInstanceLexBotRead(ctx, d, m)
 
 	d.SetId(instanceID)
-	d.Set("lex_bot_region", aws.StringValue(resp.LexBots[0].LexRegion))
-	d.Set("lex_bot_name", aws.StringValue(resp.LexBots[0].Name))
+	d.Set("lex_bot_region", aws.StringValue(resp.LexBots[0].LexBot.LexRegion))
+	d.Set("lex_bot_name", aws.StringValue(resp.LexBots[0].LexBot.Name))
+	d.Set("lex_bot_alias_arn", aws.StringValue(resp.LexBots[0].LexV2Bot.AliasArn))
 
 	return diags
 }
@@ -122,13 +123,18 @@ func resourceInstanceLexBotDelete(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 	connectSvc := meta.(Client).ConnectClient
 
-	params := &connect.DisassociateLexBotInput{
+	params := &connect.DisassociateBotInput{
 		InstanceId: aws.String(d.Get("instance_id").(string)),
-		LexRegion:  aws.String(d.Get("lex_bot_region").(string)),
-		BotName:    aws.String(d.Get("lex_bot_name").(string)),
+		LexBot: &connect.LexBot{
+			LexRegion: aws.String(d.Get("lex_bot_region").(string)),
+			Name:      aws.String(d.Get("lex_bot_name").(string)),
+		},
+		LexV2Bot: &connect.LexV2Bot{
+			AliasArn: aws.String(d.Get("lex_bot_alias_arn").(string)),
+		},
 	}
 
-	_, err := connectSvc.DisassociateLexBot(params)
+	_, err := connectSvc.DisassociateBot(params)
 	if err != nil {
 		return diag.FromErr(err)
 	}
