@@ -17,11 +17,9 @@ func resourceInstanceLexBot() *schema.Resource {
 		DeleteContext: resourceInstanceLexBotDelete,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id":       {Type: schema.TypeString, Required: true, ForceNew: true},
-			"lex_bot_region":    {Type: schema.TypeString, Required: true, ForceNew: true},
-			"lex_bot_name":      {Type: schema.TypeString, Required: true, ForceNew: true},
-			"lex_bot_alias_arn": {Type: schema.TypeString, Required: true, ForceNew: true},
-			"arn":               {Type: schema.TypeString, Computed: true, Optional: true},
+			"instance_id":         {Type: schema.TypeString, Required: true, ForceNew: true},
+			"lex_botv2_alias_arn": {Type: schema.TypeString, Required: true, ForceNew: true},
+			"arn":                 {Type: schema.TypeString, Computed: true, Optional: true},
 		},
 	}
 }
@@ -33,12 +31,8 @@ func resourceInstanceLexBotCreate(ctx context.Context, d *schema.ResourceData, m
 
 	params := &connect.AssociateBotInput{
 		InstanceId: aws.String(d.Get("instance_id").(string)),
-		LexBot: &connect.LexBot{
-			LexRegion: aws.String(d.Get("lex_bot_region").(string)),
-			Name:      aws.String(d.Get("lex_bot_name").(string)),
-		},
 		LexV2Bot: &connect.LexV2Bot{
-			AliasArn: aws.String(d.Get("lex_bot_alias_arn").(string)),
+			AliasArn: aws.String(d.Get("lex_botv2_alias_arn").(string)),
 		},
 	}
 
@@ -61,6 +55,7 @@ func resourceInstanceLexBotRead(ctx context.Context, d *schema.ResourceData, met
 
 	params := &connect.ListBotsInput{
 		InstanceId: aws.String(instanceID),
+		LexVersion: aws.String(connect.LexVersionV2),
 	}
 
 	resp, err := connectSvc.ListBots(params)
@@ -79,9 +74,7 @@ func resourceInstanceLexBotRead(ctx context.Context, d *schema.ResourceData, met
 	// // resourceInstanceLexBotRead(ctx, d, m)
 
 	d.SetId(instanceID)
-	d.Set("lex_bot_region", aws.StringValue(resp.LexBots[0].LexBot.LexRegion))
-	d.Set("lex_bot_name", aws.StringValue(resp.LexBots[0].LexBot.Name))
-	d.Set("lex_bot_alias_arn", aws.StringValue(resp.LexBots[0].LexV2Bot.AliasArn))
+	d.Set("lex_botv2_alias_arn", aws.StringValue(resp.LexBots[0].LexV2Bot.AliasArn))
 
 	return diags
 }
@@ -125,12 +118,8 @@ func resourceInstanceLexBotDelete(ctx context.Context, d *schema.ResourceData, m
 
 	params := &connect.DisassociateBotInput{
 		InstanceId: aws.String(d.Get("instance_id").(string)),
-		LexBot: &connect.LexBot{
-			LexRegion: aws.String(d.Get("lex_bot_region").(string)),
-			Name:      aws.String(d.Get("lex_bot_name").(string)),
-		},
 		LexV2Bot: &connect.LexV2Bot{
-			AliasArn: aws.String(d.Get("lex_bot_alias_arn").(string)),
+			AliasArn: aws.String(d.Get("lex_botv2_alias_arn").(string)),
 		},
 	}
 
