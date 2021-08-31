@@ -3,7 +3,7 @@ HOSTNAME=alexmammadov
 NAMESPACE=aws
 NAME=awsconnect
 BINARY=terraform-provider-${NAME}
-VERSION=0.2.2
+VERSION=0.2.5
 OS_ARCH=darwin_amd64
 
 default: install
